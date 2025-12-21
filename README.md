@@ -1,5 +1,7 @@
 
-# 📘 PICTOPEDIA – Word Search Chatbot Using Wikipedia  
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2196f3,100:21cbf3&height=180&section=header&text=📘%20PICTOPEDIA%20–%20Word%20Search%20Chatbot%20Using%20Wikipedia&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
+</p>
 
 **PICTOPEDIA** is a chatbot that allows users to search for information on specific words or terms using the Wikipedia API. It works like an **interactive word-search assistant**, where users can input queries and instantly receive relevant, real-time information.
 
@@ -103,4 +105,23 @@ flowchart LR
     style E fill:#FF8A65,stroke:#BF360C,stroke-width:2px,color:#fff;
     style F fill:#90CAF9,stroke:#0D47A1,stroke-width:2px,color:#000;
 
-     
+     ```
+## 👨‍💻 Author  
+
+**Lomada Siva Gangi Reddy**  
+- 🎓 B.Tech CSE (Data Science), RGMCET (2021–2025)  
+- 💡 Interests: Python | Machine Learning | Deep Learning | Data Science  
+- 📍 Open to **Internships & Job Offers**
+
+ **Contact Me**:  
+
+- 📧 **Email**: lomadasivagangireddy3@gmail.com  
+- 📞 **Phone**: 9346493592  
+- 💼 [LinkedIn](https://www.linkedin.com/in/lomada-siva-gangi-reddy-a64197280/)  🌐 [GitHub](https://github.com/shivareddy2002)  🚀 [Portfolio](https://lsgr-portfolio-pulse.lovable.app/)
+
+---
+
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:f9c74f,100:ff4b4b&height=120&section=footer"/>
+</p>
+
