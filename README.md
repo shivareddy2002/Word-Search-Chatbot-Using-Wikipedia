@@ -40,8 +40,8 @@ User Input ➡️ Input Handling ➡️ API Request ➡️ Response Processing �
 ## 🌐 Project Workflow & Web App Screenshots
 
 <p align="center">
-  <img width="278" alt="PICTOPEDIA UI" src="https://github.com/user-attachments/assets/c9e79365-bc9d-4468-be03-61aea052b0c4" />
-  <img src="https://github.com/shivareddy2002/Word-Search-Chatbot-Using-Wikipedia/blob/main/workflow.png" alt="PICTOPEDIA Workflow Diagram" width="600"/>
+  <img src="https://github.com/shivareddy2002/Word-Search-Chatbot-Using-Wikipedia/blob/main/workflow.png" width="600"/>
+  <img width="300" src="https://github.com/user-attachments/assets/c9e79365-bc9d-4468-be03-61aea052b0c4" />
 </p>
 
 ---
