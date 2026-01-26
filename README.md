@@ -110,6 +110,6 @@ flowchart LR
 ---
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:f9c74f,100:ff4b4b&height=120&section=footer"/>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2196f3,100:21cbf3&height=120&section=footer"/>
 </p>
 
