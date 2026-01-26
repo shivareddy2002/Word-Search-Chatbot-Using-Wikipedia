@@ -74,19 +74,6 @@ Below are **ready-to-drop code snippets** you can paste into your project to imp
 
 ---
 
-## 👨‍💻 Author  
-
-**Lomada Siva Gangi Reddy**  
-- 🎓 B.Tech CSE (Data Science), RGMCET (2021–2025)  
-- 💡 Interests: Python | Machine Learning | Deep Learning | Data Science  
-- 📍 Open to **Internships & Job Offers**  
-
-📬 **Contact Me**:  
-- 📞 9346493592  
-- [💼 LinkedIn](https://www.linkedin.com/in/lomada-siva-gangi-reddy-a64197280/) [🌐 GitHub](https://github.com/shivareddy2002)  
-
----
-
 ## 📂 Project Flow  
 
 ```mermaid
@@ -105,7 +92,8 @@ flowchart LR
     style E fill:#FF8A65,stroke:#BF360C,stroke-width:2px,color:#fff;
     style F fill:#90CAF9,stroke:#0D47A1,stroke-width:2px,color:#000;
 
-     ```
+ ```
+
 ## 👨‍💻 Author  
 
 **Lomada Siva Gangi Reddy**  
@@ -117,7 +105,7 @@ flowchart LR
 
 - 📧 **Email**: lomadasivagangireddy3@gmail.com  
 - 📞 **Phone**: 9346493592  
-- 💼 [LinkedIn](https://www.linkedin.com/in/lomada-siva-gangi-reddy-a64197280/)  🌐 [GitHub](https://github.com/shivareddy2002)  🚀 [Portfolio](https://lsgr-portfolio-pulse.lovable.app/)
+- 💼 [LinkedIn](https://www.linkedin.com/in/lomada-siva-gangi-reddy-a64197280/)  🚀 [Portfolio](https://lsgr-portfolio-pulse.lovable.app/) 🌐 [GitHub](https://github.com/shivareddy2002)  
 
 ---
 
