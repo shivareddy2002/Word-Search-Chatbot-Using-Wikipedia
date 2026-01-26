@@ -37,12 +37,18 @@ User Input ➡️ Input Handling ➡️ API Request ➡️ Response Processing �
 
 ---
 
-## WedApp Screen shots
+## 🌐 Web App Screenshots
 
 <p align="center">
-  <img width="278" alt="image" src="https://github.com/user-attachments/assets/c9e79365-bc9d-4468-be03-61aea052b0c4" />
-  <img src="https://chatgpt.com/backend-api/estuary/content?id=file_000000001efc72069ea6156380e41f6c&ts=491506&p=fs&cid=1&sig=e9aa93501d200f37fe2de7d1e7a77557271acc40da1b482b45baaec6eb2a5f56&v=0"  alt="PICTOPEDIA Workflow Diagram" width="800"/>
+  <img width="278" alt="PICTOPEDIA UI" src="https://github.com/user-attachments/assets/c9e79365-bc9d-4468-be03-61aea052b0c4" />
+</p>
 
+## 🔄 Project Workflow
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/shivareddy2002/Word-Search-Chatbot-Using-Wikipedia-workflow.png" 
+       alt="PICTOPEDIA Workflow Diagram" 
+       width="800"/>
 </p>
 
 ---
