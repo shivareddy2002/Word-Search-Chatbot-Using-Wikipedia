@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2196f3,100:21cbf3&height=180&section=header&text=📘%20PICTOPEDIA%20–%20Word%20Search%20Chatbot%20Using%20Wikipedia&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2196f3,100:21cbf3&height=180&section=header&text=📘%20Word%20Search%20Chatbot%20Using%20Wikipedia&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
 </p>
 
 **PICTOPEDIA** is a chatbot that allows users to search for information on specific words or terms using the Wikipedia API. It works like an **interactive word-search assistant**, where users can input queries and instantly receive relevant, real-time information.
