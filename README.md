@@ -8,7 +8,7 @@
 ## 🔗 Live Demo  
 <p align="center">🚀 Visit <strong>PICTOPEDIA Chatbot</strong></p>
 <p align="center">
-  <a href="https://shivareddy2002.github.io/Word-Search-Chatbot-Using-Wikipedia-/">
+  <a href="https://word-search-chatbot-using-wikipedia.vercel.app/">
     <img src="https://img.shields.io/badge/Live%20Demo-Click%20Here-brightgreen?style=for-the-badge" alt="Live Demo Badge">
   </a>
 </p>
