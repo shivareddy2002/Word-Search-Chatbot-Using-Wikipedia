@@ -14,7 +14,7 @@ const els = {
   chatList: document.getElementById("chatList"),
   messages: document.getElementById("messages"),
   input: document.getElementById("promptInput"),
-  suggestions: document.getElementById("suggestions"),
+  searchStatus: document.getElementById("searchStatus"),
   conversationSearch: document.getElementById("conversationSearch"),
   sendBtn: document.getElementById("sendBtn"),
   newChatBtn: document.getElementById("newChatBtn"),
@@ -45,7 +45,6 @@ function init() {
   renderMessages();
 }
 
-// ----------------- Helpers -----------------
 function uid(prefix = "id") {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -76,10 +75,9 @@ function copyText(text) {
   navigator.clipboard?.writeText(text).catch(() => {});
 }
 
-// ----------------- Persistence -----------------
 function saveSessions() {
   localStorage.setItem(STORAGE.SESSIONS, JSON.stringify(state.sessions));
-  localStorage.setItem(STORAGE.ACTIVE, state.activeSessionId);
+  localStorage.setItem(STORAGE.ACTIVE, state.activeSessionId || "");
 }
 
 function loadSessions() {
@@ -88,7 +86,8 @@ function loadSessions() {
   if (!raw) return;
 
   try {
-    state.sessions = JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    state.sessions = Array.isArray(parsed) ? parsed : [];
     state.activeSessionId = active;
   } catch {
     state.sessions = [];
@@ -109,7 +108,6 @@ function loadLanguage() {
   els.languageSelect.value = lang;
 }
 
-// ----------------- Sessions -----------------
 function createSession() {
   const session = {
     id: uid("session"),
@@ -120,12 +118,12 @@ function createSession() {
       {
         id: uid("m"),
         role: "bot",
-        text: "Hello! Ask a question and I will fetch Wikipedia information with an AI-style explanation.",
-        aiExplanation: "",
+        text: "Hello! Ask a question and I will fetch Wikipedia information for you.",
         title: "",
         image: "",
         link: "",
         query: "",
+        time: "",
       },
     ],
   };
@@ -220,16 +218,18 @@ function onChatListAction(event) {
   if (action === "share") {
     const payload = {
       title: session.title,
-      createdAt: session.createdAt,
+      language: state.language,
+      pinned: session.pinned,
       messages: session.messages,
     };
     copyText(JSON.stringify(payload, null, 2));
-    alert("Shareable chat JSON copied to clipboard.");
+    alert("Chat JSON copied to clipboard.");
   }
 
   if (action === "delete") {
     if (!confirm("Delete this chat permanently?")) return;
     state.sessions = state.sessions.filter((s) => s.id !== sessionId);
+
     if (!state.sessions.length) {
       createSession();
     } else if (state.activeSessionId === sessionId) {
@@ -242,7 +242,6 @@ function onChatListAction(event) {
   renderMessages();
 }
 
-// ----------------- Messages -----------------
 function addMessage(role, payload) {
   const session = getActiveSession();
   if (!session) return;
@@ -251,7 +250,6 @@ function addMessage(role, payload) {
     id: uid("m"),
     role,
     text: payload.text || "",
-    aiExplanation: payload.aiExplanation || "",
     title: payload.title || "",
     image: payload.image || "",
     link: payload.link || "",
@@ -260,7 +258,7 @@ function addMessage(role, payload) {
   };
 
   session.messages.push(message);
-  if (session.title === "New Chat") {
+  if (session.title === "New Chat" && role === "user") {
     session.title = sessionTitleFromFirstQuestion(session);
   }
 
@@ -278,7 +276,16 @@ function renderMessages() {
   session.messages.forEach((msg) => {
     els.messages.appendChild(buildMessageNode(msg));
   });
+  if (els.conversationSearch.value.trim()) runConversationSearch();
   autoScroll();
+}
+
+function renderRichText(text) {
+  const withLinks = escapeHtml(text).replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+  return `<p class="bot-body">${withLinks.replace(/\n/g, "<br>")}</p>`;
 }
 
 function buildMessageNode(message) {
@@ -302,96 +309,29 @@ function buildMessageNode(message) {
   }
 
   const titleHTML = message.title ? `<h3 class="bot-title">${escapeHtml(message.title)}</h3>` : "";
-  const aiHTML = message.aiExplanation ? `<p class="bot-section-label">AI Explanation</p>${renderRichText(message.aiExplanation)}` : "";
   const wikiBody = renderRichText(message.text || "");
-  const readLink = message.link ? ` <a href="${message.link}" target="_blank" rel="noopener noreferrer">Read full article</a>` : "";
-  const imageHTML = message.image ? `<img src="${message.image}" alt="Wikipedia image" loading="lazy" />` : "";
+  const readLink = message.link
+    ? ` <a href="${message.link}" target="_blank" rel="noopener noreferrer">Read full article</a>`
+    : "";
+  const imageHTML = message.image ? `<img src="${message.image}" alt="Wikipedia preview image" loading="lazy" />` : "";
 
   article.innerHTML = `
     ${titleHTML}
-    ${aiHTML}
     <p class="bot-section-label">Wikipedia Summary</p>
-    ${wikiBody.replace("</p>", `${readLink}</p>`)}
+    ${wikiBody}
+    <p class="bot-body">${readLink}</p>
     ${imageHTML}
     <div class="msg-actions">
       <button class="action-btn" data-msg-action="copy">Copy</button>
-      <button class="action-btn" data-msg-action="regen">Regenerate</button>
       <button class="action-btn" data-msg-action="speak">Speak</button>
       <button class="action-btn" data-msg-action="delete">Delete</button>
     </div>
   `;
 
-  attachCodeCopyHandlers(article);
   return article;
 }
 
-function renderRichText(text) {
-  const blocks = [];
-  const regex = /```(\w+)?\n([\s\S]*?)```/g;
-  let lastIndex = 0;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    const plain = text.slice(lastIndex, match.index).trim();
-    if (plain) blocks.push({ type: "text", value: plain });
-
-    blocks.push({ type: "code", lang: match[1] || "code", value: match[2].trimEnd() });
-    lastIndex = regex.lastIndex;
-  }
-
-  const trailing = text.slice(lastIndex).trim();
-  if (trailing) blocks.push({ type: "text", value: trailing });
-
-  if (!blocks.length) {
-    return `<p class="bot-body">${escapeHtml(text)}</p>`;
-  }
-
-  return blocks
-    .map((block) => {
-      if (block.type === "text") {
-        return `<p class="bot-body">${escapeHtml(block.value)}</p>`;
-      }
-      return `
-        <div class="code-block">
-          <div class="code-header">
-            <span>${escapeHtml(block.lang)}</span>
-            <button class="action-btn" data-copy-code="${escapeHtml(block.value)}">Copy code</button>
-          </div>
-          <pre><code>${escapeHtml(block.value)}</code></pre>
-        </div>
-      `;
-    })
-    .join("");
-}
-
-function attachCodeCopyHandlers(container) {
-  container.querySelectorAll("[data-copy-code]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const code = btn.getAttribute("data-copy-code");
-      copyText(code);
-    });
-  });
-}
-
-function findMessageById(messageId) {
-  const session = getActiveSession();
-  if (!session) return null;
-  return session.messages.find((m) => m.id === messageId) || null;
-}
-
-function removeMessageById(messageId) {
-  const session = getActiveSession();
-  if (!session) return;
-
-  session.messages = session.messages.filter((m) => m.id !== messageId);
-  session.title = sessionTitleFromFirstQuestion(session);
-  saveSessions();
-  renderChatList();
-  renderMessages();
-}
-
-async function onMessageAction(event) {
+function onMessageAction(event) {
   const btn = event.target.closest("[data-msg-action]");
   if (!btn) return;
 
@@ -399,67 +339,60 @@ async function onMessageAction(event) {
   const card = btn.closest(".msg");
   if (!card) return;
 
-  const message = findMessageById(card.dataset.messageId);
-  if (!message) return;
+  const messageId = card.dataset.messageId;
+  const session = getActiveSession();
+  if (!session) return;
+
+  const msg = session.messages.find((m) => m.id === messageId);
+  if (!msg) return;
 
   if (action === "copy") {
-    const content = message.role === "bot"
-      ? `${message.title ? `${message.title}\n` : ""}${message.aiExplanation ? `AI Explanation: ${message.aiExplanation}\n` : ""}${message.text}`
-      : message.text;
-    copyText(content);
+    const text = [msg.title, msg.text].filter(Boolean).join("\n\n");
+    copyText(text || msg.text);
+    return;
+  }
+
+  if (action === "speak") {
+    speakText(msg.text || msg.title);
+    return;
+  }
+
+  if (action === "edit") {
+    if (msg.role !== "user") return;
+    const edited = prompt("Edit your message:", msg.text);
+    if (!edited || !edited.trim()) return;
+    msg.text = edited.trim();
+    saveSessions();
+    renderMessages();
     return;
   }
 
   if (action === "delete") {
-    removeMessageById(message.id);
-    return;
-  }
-
-  if (action === "edit" && message.role === "user") {
-    const edited = prompt("Edit your question:", message.text);
-    if (!edited || !edited.trim()) return;
-
-    removeMessageById(message.id);
-    addMessage("user", { text: edited.trim() });
-    await fetchAndRenderBot(edited.trim());
-    return;
-  }
-
-  if (action === "regen" && message.role === "bot") {
-    const query = message.query || findPreviousUserQuery(message.id);
-    if (!query) return;
-    await fetchAndRenderBot(query);
-    return;
-  }
-
-  if (action === "speak" && message.role === "bot") {
-    const speechText = `${message.title ? `${message.title}. ` : ""}${message.aiExplanation ? `AI explanation: ${message.aiExplanation}. ` : ""}${message.text}`;
-    speakText(speechText);
+    session.messages = session.messages.filter((m) => m.id !== messageId);
+    if (!session.messages.length) {
+      session.messages.push({
+        id: uid("m"),
+        role: "bot",
+        text: "This chat is empty now. Ask something to continue.",
+        title: "",
+        image: "",
+        link: "",
+        query: "",
+        time: "",
+      });
+    }
+    saveSessions();
+    renderMessages();
   }
 }
 
-function findPreviousUserQuery(botMessageId) {
-  const session = getActiveSession();
-  if (!session) return "";
-  const idx = session.messages.findIndex((m) => m.id === botMessageId);
-  for (let i = idx - 1; i >= 0; i--) {
-    if (session.messages[i].role === "user") return session.messages[i].text;
-  }
-  return "";
-}
-
-// ----------------- Chat Flow -----------------
 async function handleSend() {
   const question = els.input.value.trim();
-  hideSuggestions();
-
-  if (!question) {
-    addMessage("bot", { text: "Please type a question first." });
-    return;
-  }
+  if (!question) return;
 
   addMessage("user", { text: question });
   els.input.value = "";
+
   await fetchAndRenderBot(question);
 }
 
@@ -470,78 +403,16 @@ async function fetchAndRenderBot(question) {
     const data = await fetchSummary(question);
     hideTyping();
 
-    if (!data || !data.extract) {
+    if (!data?.extract) {
       addMessage("bot", {
         text: "I couldn't find a direct Wikipedia article. Try asking another question.",
         query: question,
       });
       return;
     }
-  }
-
-  if (action === "share") {
-    const payload = {
-      title: session.title,
-      language: state.language,
-      pinned: session.pinned,
-      messages: session.messages,
-    };
-    const shareText = JSON.stringify(payload, null, 2);
-    copyText(shareText);
-    alert("Chat JSON copied to clipboard.");
-  }
-
-  saveSessions();
-  renderChatList();
-  renderMessages();
-}
-
-function toggleTheme() {
-  const willDark = !document.body.classList.contains("dark");
-  document.body.classList.toggle("dark", willDark);
-  localStorage.setItem(STORAGE.THEME, willDark ? "dark" : "light");
-  el.themeBtn.textContent = willDark ? "☀" : "🌙";
-}
-
-function downloadChat() {
-  const session = getActiveSession();
-  if (!session || !session.messages.length) return;
-
-  const lines = session.messages.map((m) => {
-    const who = m.role === "user" ? "User" : "Bot";
-    const body = m.role === "bot" ? `${m.title ? m.title + " - " : ""}${m.text}` : m.text;
-    return `${who}: ${body}`;
-  });
-
-  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${session.title.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "chat"}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function startMic() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    addMessage("bot", { text: "Speech-to-text is not supported in this browser." });
-    return;
-  }
-
-  if (!state.recognition) {
-    state.recognition = new SR();
-    state.recognition.continuous = false;
-    state.recognition.interimResults = false;
-    state.recognition.onresult = (e) => {
-      el.input.value = e.results[0][0].transcript;
-      handleSend();
-    };
-  }
 
     addMessage("bot", {
       title: data.title || "",
-      aiExplanation: buildAIExplanation(data.extract),
       text: data.extract,
       image: data.thumbnail?.source || "",
       link: data.content_urls?.desktop?.page || `https://${state.language}.wikipedia.org/wiki/${encodeURIComponent(question)}`,
@@ -561,7 +432,6 @@ async function fetchSummary(query) {
   let res = await fetch(summaryUrl);
   if (res.ok) return res.json();
 
-  // Search fallback for natural-language questions.
   const searchUrl = `https://${state.language}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&namespace=0&format=json&origin=*`;
   const searchRes = await fetch(searchUrl);
   if (!searchRes.ok) throw new Error("search_failed");
@@ -577,22 +447,12 @@ async function fetchSummary(query) {
   return res.json();
 }
 
-function buildAIExplanation(summary) {
-  const cleaned = summary
-    .replace(/\([^)]*\)/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  const firstSentence = cleaned.split(/(?<=[.!?])\s/)[0] || cleaned;
-  return `In simple words, ${firstSentence.charAt(0).toLowerCase() + firstSentence.slice(1)}`;
-}
-
 function showTyping() {
   if (state.typingNode) return;
 
   const node = document.createElement("article");
   node.className = "msg bot";
-  node.innerHTML = `<p class="bot-body">Thinking<span class="typing-dots"><span></span><span></span><span></span></span></p>`;
+  node.innerHTML = '<p class="bot-body">Thinking<span class="typing-dots"><span></span><span></span><span></span></span></p>';
   state.typingNode = node;
   els.messages.appendChild(node);
   autoScroll();
@@ -608,70 +468,30 @@ function autoScroll() {
   els.messages.scrollTop = els.messages.scrollHeight;
 }
 
-// ----------------- Conversation Search -----------------
 function runConversationSearch() {
   const term = els.conversationSearch.value.trim().toLowerCase();
   const cards = Array.from(els.messages.querySelectorAll(".msg"));
 
   cards.forEach((card) => card.classList.remove("highlight"));
-  if (!term) return;
+  if (!term) {
+    els.searchStatus.textContent = "";
+    return;
+  }
 
   const matches = cards.filter((card) => card.textContent.toLowerCase().includes(term));
   matches.forEach((card) => card.classList.add("highlight"));
-  if (matches[0]) {
-    matches[0].scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-}
 
-// ----------------- Suggestions -----------------
-async function onInputSuggestions() {
-  const term = els.input.value.trim();
-  if (term.length < 2) {
-    hideSuggestions();
+  if (!matches.length) {
+    els.searchStatus.textContent = "No messages found";
     return;
   }
 
-  const url = `https://${state.language}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(term)}&limit=6&namespace=0&format=json&origin=*`;
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    renderSuggestions(data?.[1] || []);
-  } catch {
-    hideSuggestions();
-  }
+  els.searchStatus.textContent = `${matches.length} message${matches.length > 1 ? "s" : ""} found`;
+  matches[0].scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
-function renderSuggestions(items) {
-  els.suggestions.innerHTML = "";
-
-  if (!items.length) {
-    hideSuggestions();
-    return;
-  }
-
-  items.forEach((item) => {
-    const row = document.createElement("div");
-    row.className = "suggestion-item";
-    row.textContent = item;
-    row.addEventListener("click", () => {
-      els.input.value = item;
-      hideSuggestions();
-      els.input.focus();
-    });
-    els.suggestions.appendChild(row);
-  });
-
-  els.suggestions.style.display = "block";
-}
-
-function hideSuggestions() {
-  els.suggestions.style.display = "none";
-  els.suggestions.innerHTML = "";
-}
-
-// ----------------- Voice -----------------
 function speakText(text) {
-  if (!("speechSynthesis" in window)) return;
+  if (!("speechSynthesis" in window) || !text) return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = state.language;
   window.speechSynthesis.cancel();
@@ -699,14 +519,13 @@ function startMic() {
   state.recognition.start();
 }
 
-// ----------------- Export -----------------
 function downloadChatAsTXT() {
   const session = getActiveSession();
   if (!session) return;
 
   const lines = session.messages.map((m) => {
     if (m.role === "user") return `User: ${m.text}`;
-    return `Bot: ${m.title ? `${m.title} - ` : ""}${m.aiExplanation ? `AI Explanation: ${m.aiExplanation} | ` : ""}${m.text}`;
+    return `Bot: ${m.title ? `${m.title} - ` : ""}${m.text}`;
   });
 
   const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
@@ -727,7 +546,7 @@ function exportChatAsPDF() {
     `Chat Title: ${session.title}`,
     `Date: ${now}`,
     "",
-    ...session.messages.map((m) => `${m.role === "user" ? "User" : "Bot"}: ${m.title ? `${m.title} - ` : ""}${m.aiExplanation ? `AI: ${m.aiExplanation}. ` : ""}${m.text}`),
+    ...session.messages.map((m) => `${m.role === "user" ? "User" : "Bot"}: ${m.title ? `${m.title} - ` : ""}${m.text}`),
   ];
 
   const pdfBytes = createSimplePDF(lines);
@@ -785,7 +604,6 @@ function sanitizeFilename(name) {
   return (name || "chat").replace(/[^a-z0-9]/gi, "_").toLowerCase();
 }
 
-// ----------------- Theme + Mobile -----------------
 function toggleTheme() {
   const dark = !document.body.classList.contains("dark");
   document.body.classList.toggle("dark", dark);
@@ -803,13 +621,11 @@ function closeMobileSidebar() {
   }
 }
 
-// ----------------- Events -----------------
 function bindEvents() {
   els.sendBtn.addEventListener("click", handleSend);
   els.input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") handleSend();
   });
-  els.input.addEventListener("input", debounce(onInputSuggestions, 280));
 
   els.newChatBtn.addEventListener("click", () => {
     createSession();
@@ -829,7 +645,6 @@ function bindEvents() {
   els.languageSelect.addEventListener("change", (e) => {
     state.language = e.target.value;
     localStorage.setItem(STORAGE.LANG, state.language);
-    hideSuggestions();
   });
 
   els.menuBtn.addEventListener("click", openMobileSidebar);
