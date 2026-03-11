@@ -25,6 +25,7 @@ const els = {
   mobileBackdrop: document.getElementById("mobileBackdrop"),
   micBtn: document.getElementById("micBtn"),
   languageSelect: document.getElementById("languageSelect"),
+  suggestionTray: document.getElementById("suggestionTray"),
 };
 
 const state = {
@@ -277,7 +278,19 @@ function renderMessages() {
     els.messages.appendChild(buildMessageNode(msg));
   });
   if (els.conversationSearch.value.trim()) runConversationSearch();
+  maybeShowSuggestions();
   autoScroll();
+}
+
+function hideSuggestions() {
+  els.suggestionTray?.classList.add("hidden");
+}
+
+function maybeShowSuggestions() {
+  const session = getActiveSession();
+  if (!session) return;
+  const hasOnlyWelcome = session.messages.length <= 1;
+  els.suggestionTray?.classList.toggle("hidden", !hasOnlyWelcome);
 }
 
 function renderRichText(text) {
@@ -651,6 +664,13 @@ function bindEvents() {
   els.menuBtn.addEventListener("click", openMobileSidebar);
   els.mobileBackdrop.addEventListener("click", closeMobileSidebar);
   window.addEventListener("resize", closeMobileSidebar);
+
+  els.suggestionTray?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-suggestion]");
+    if (!btn) return;
+    els.input.value = btn.dataset.suggestion;
+    handleSend();
+  });
 }
 
 init();

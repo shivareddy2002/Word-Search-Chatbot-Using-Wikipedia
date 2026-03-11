@@ -1,115 +1,42 @@
+# PICTOPEDIA — Wikipedia Search Chatbot
 
-<p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2196f3,100:21cbf3&height=180&section=header&text=📘%20Word%20Search%20Chatbot%20Using%20Wikipedia&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
-</p>
+PICTOPEDIA is a modern, client-side Wikipedia chatbot built with **HTML, CSS, and JavaScript**.
+It provides a polished chat experience with multi-session history, language support, voice input, and export options.
 
-**PICTOPEDIA** is a chatbot that allows users to search for information on specific words or terms using the Wikipedia API. It works like an **interactive word-search assistant**, where users can input queries and instantly receive relevant, real-time information.
+## ✨ Highlights
 
-## 🔗 Live Demo  
-<p align="center">🚀 Visit <strong>PICTOPEDIA Chatbot</strong></p>
-<p align="center">
-  <a href="https://word-search-chatbot-using-wikipedia.vercel.app/">
-    <img src="https://img.shields.io/badge/Live%20Demo-Click%20Here-brightgreen?style=for-the-badge" alt="Live Demo Badge">
-  </a>
-</p>
+- Professional glassmorphism-based UI with light/dark theme.
+- Wikipedia summary search with fallback query resolution.
+- Multi-chat sidebar with rename, pin, share, and delete actions.
+- In-chat search and quick suggestion chips for fast exploration.
+- Speech-to-text input and text-to-speech output (browser supported).
+- Export active conversation as **TXT** or **PDF**.
+- Fully responsive layout optimized for desktop and mobile.
 
----
+## 🚀 Run Locally
 
-## 🚀 Project Overview  
+Because this project uses browser APIs and fetch calls, run it through a local server:
 
-**How It Works (Step-by-Step):**
+```bash
+python3 -m http.server 4173
+```
 
-1. **User Input** → User types a query in the chatbot.  
-   *Example:* `"What is Artificial Intelligence?"`  
+Then open: `http://localhost:4173`
 
-2. **Input Handling** → Input validated and handled by `handleUserInput()` in `script.js`.  
+## 🧩 Tech Stack
 
-3. **API Request** → Sends request to **Wikipedia API** for relevant information.  
+- HTML5
+- CSS3 (custom properties + responsive layout)
+- Vanilla JavaScript (ES6+)
+- Wikipedia REST + OpenSearch APIs
 
-4. **Response Processing** → Extracts and formats the response.  
+## 📁 Project Structure
 
-5. **Displaying Results** → Shows content in a **chat-style interface**.  
+- `index.html` — App layout and UI structure.
+- `style.css` — Theme, responsive design, and component styles.
+- `script.js` — State management, event handling, Wikipedia API integration, exports.
 
-6. **Interaction Loop** → Supports multiple queries with **chat history retention**.  
+## 🔍 Notes
 
-➡️ **Flow Summary:**  
-User Input ➡️ Input Handling ➡️ API Request ➡️ Response Processing ➡️ Display Results ➡️ Repeat Interaction  
-
----
-
-## 🌐 Project Workflow & Web App Screenshots
-
-<p align="center">
-  <img src="https://github.com/shivareddy2002/Word-Search-Chatbot-Using-Wikipedia/blob/main/workflow.png" width="600"/>
-</p>
-
----
-## ✨ Features  
-
-- 🖥️ **Simple & Interactive UI** – Clean and user-friendly interface.  
-- ⚡ **Real-Time Retrieval** – Fetches data live from Wikipedia.  
-- 💬 **Chat-Style Display** – Results presented conversationally.  
-- 🔄 **Multi-Search Support** – Keeps chat history during session.  
-- ❌ **Error Handling** – Provides fallback messages if data not found.  
-
----
-
-## 🛠️ Technologies Used  
-
-- **HTML5, CSS3** – UI design & layout.  
-- **JavaScript (ES6)** – Logic, event handling & API calls.  
-- **Wikipedia API** – Fetches word/term information.  
-
----
-
-## 🔮 Future Enhancements 
-
-Below are **ready-to-drop code snippets** you can paste into your project to implement the five enhancements:
-
-- 🔊 **Text-to-Speech (TTS)**
-- 🌐 **Multiple-language support (Wikipedia language domains)**
-- 🎨 **UI/UX themes (theme presets + CSS variables)**
-- 📱 **Mobile responsive layout (CSS breakpoints & flexible layout)**
-- 💾 **Download chat history (JSON / TXT export)**
-
----
-
-## 📂 Project Flow  
-
-```mermaid
-flowchart LR
-    A[User Input] --> B[Input Handling]
-    B --> C[Wikipedia API Request]
-    C --> D[Process Response]
-    D --> E[Display Results]
-    E --> F[Interaction Loop]
-
-    %% Styles
-    style A fill:#FFD54F,stroke:#F57F17,stroke-width:2px,color:#000;
-    style B fill:#4FC3F7,stroke:#0277BD,stroke-width:2px,color:#fff;
-    style C fill:#AED581,stroke:#33691E,stroke-width:2px,color:#000;
-    style D fill:#BA68C8,stroke:#4A148C,stroke-width:2px,color:#fff;
-    style E fill:#FF8A65,stroke:#BF360C,stroke-width:2px,color:#fff;
-    style F fill:#90CAF9,stroke:#0D47A1,stroke-width:2px,color:#000;
-
- ```
-
-## 👨‍💻 Author  
-
-**Lomada Siva Gangi Reddy**  
-- 🎓 B.Tech CSE (Data Science), RGMCET (2021–2025)  
-- 💡 Interests: Python | Machine Learning | Deep Learning | Data Science  
-- 📍 Open to **Internships & Job Offers**
-
- **Contact Me**:  
-
-- 📧 **Email**: lomadasivagangireddy3@gmail.com  
-- 📞 **Phone**: 9346493592  
-- 💼 [LinkedIn](https://www.linkedin.com/in/lomada-siva-gangi-reddy-a64197280/)  🚀 [Portfolio](https://lsgr-portfolio-pulse.lovable.app/) 🌐 [GitHub](https://github.com/shivareddy2002)  
-
----
-
-<p align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2196f3,100:21cbf3&height=120&section=footer"/>
-</p>
-
+- Voice features depend on browser support (`SpeechRecognition` and `speechSynthesis`).
+- Chat history is stored in browser `localStorage`.
