@@ -1,23 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Search Chatbot</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PICTOPEDIA - Word Search Chatbot</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div id="chatbot">
-        <div id="header">
-            <span class="chat-title"><b>PICTOPEDIA </b><BR><P>Word Search Chatbot Using Wikipedia API</P></span>
+  <div class="app-layout" id="appLayout">
+    <!-- Mobile overlay to close sidebar when it is open -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Sidebar (chat session list) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <h2>PICTOPEDIA</h2>
+        <button id="newChatBtn" class="sidebar-btn" type="button">+ New Chat</button>
+      </div>
+
+      <div class="sidebar-list-wrap">
+        <h3>Chat History</h3>
+        <ul id="chatSessionList" class="chat-session-list"></ul>
+      </div>
+    </aside>
+
+    <!-- Main chat area -->
+    <main class="main-chat">
+      <header class="chat-header">
+        <button id="menuBtn" class="icon-btn mobile-only" type="button" aria-label="Toggle sidebar">☰</button>
+
+        <div class="header-title">
+          <h1>PICTOPEDIA</h1>
+          <p>Word Search Chatbot Using Wikipedia API</p>
         </div>
-        <div id="chat-output"></div>
-        <div id="input-container">
-            <input type="text" id="user-input" placeholder="Ask about word ">
-            <button onclick="handleUserInput()">Search</button>
+
+        <div class="header-controls">
+          <select id="languageSelect" title="Wikipedia language">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+          </select>
+
+          <button id="themeBtn" class="icon-btn" type="button" title="Toggle theme">🌙</button>
+          <button id="downloadBtn" class="icon-btn" type="button" title="Download current chat">⬇</button>
         </div>
-    </div>
-    <script src="script.js"></script>
+      </header>
+
+      <section id="chatMessages" class="chat-messages" aria-live="polite"></section>
+
+      <footer class="chat-input-area">
+        <div class="input-row">
+          <button id="micBtn" class="icon-btn" type="button" title="Speech to text">🎤</button>
+          <input id="userInput" type="text" placeholder="Ask about word" autocomplete="off" />
+          <button id="sendBtn" class="send-btn" type="button">Search</button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
-
