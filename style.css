@@ -55,13 +55,13 @@ html, body {
   color: var(--sidebar-text);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(148, 163, 184, 0.16);
+  border-right: 1px solid rgba(205, 214, 226, 0.16);
   z-index: 20;
 }
 
 .sidebar-top {
   padding: 1rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  border-bottom: 1px solid rgba(207, 219, 236, 0.2);
 }
 
 .sidebar-top h2 {
@@ -73,7 +73,7 @@ html, body {
   width: 100%;
   padding: 0.65rem;
   border-radius: 0.7rem;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(28, 35, 45, 0.3);
   background: transparent;
   color: var(--sidebar-text);
   cursor: pointer;
@@ -318,7 +318,7 @@ select option { color: #0f172a; }
   .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.5);
+    background: rgba(62, 70, 91, 0.5);
     z-index: 10;
   }
 
