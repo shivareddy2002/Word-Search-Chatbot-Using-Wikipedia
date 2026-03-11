@@ -477,6 +477,67 @@ async function fetchAndRenderBot(question) {
       });
       return;
     }
+  }
+
+  if (action === "share") {
+    const payload = {
+      title: session.title,
+      language: state.language,
+      pinned: session.pinned,
+      messages: session.messages,
+    };
+    const shareText = JSON.stringify(payload, null, 2);
+    copyText(shareText);
+    alert("Chat JSON copied to clipboard.");
+  }
+
+  saveSessions();
+  renderChatList();
+  renderMessages();
+}
+
+function toggleTheme() {
+  const willDark = !document.body.classList.contains("dark");
+  document.body.classList.toggle("dark", willDark);
+  localStorage.setItem(STORAGE.THEME, willDark ? "dark" : "light");
+  el.themeBtn.textContent = willDark ? "☀" : "🌙";
+}
+
+function downloadChat() {
+  const session = getActiveSession();
+  if (!session || !session.messages.length) return;
+
+  const lines = session.messages.map((m) => {
+    const who = m.role === "user" ? "User" : "Bot";
+    const body = m.role === "bot" ? `${m.title ? m.title + " - " : ""}${m.text}` : m.text;
+    return `${who}: ${body}`;
+  });
+
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${session.title.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "chat"}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function startMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    addMessage("bot", { text: "Speech-to-text is not supported in this browser." });
+    return;
+  }
+
+  if (!state.recognition) {
+    state.recognition = new SR();
+    state.recognition.continuous = false;
+    state.recognition.interimResults = false;
+    state.recognition.onresult = (e) => {
+      el.input.value = e.results[0][0].transcript;
+      handleSend();
+    };
+  }
 
     addMessage("bot", {
       title: data.title || "",
