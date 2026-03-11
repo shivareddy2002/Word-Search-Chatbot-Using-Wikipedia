@@ -1,104 +1,234 @@
-// PICTOPEDIA Chatbot
-// Built with HTML, CSS, and Vanilla JS (ES6)
+// ============================================================
+// PICTOPEDIA - Word Search Chatbot Using Wikipedia API
+// Vanilla JavaScript (ES6)
+// ============================================================
 
 const STORAGE_KEYS = {
   theme: "pictopedia-theme",
-  chat: "pictopedia-chat-history",
+  sessions: "pictopedia-sessions",
+  activeSessionId: "pictopedia-active-session-id",
 };
 
 const elements = {
+  appLayout: document.getElementById("appLayout"),
+  sidebar: document.getElementById("sidebar"),
+  overlay: document.getElementById("overlay"),
+  menuBtn: document.getElementById("menuBtn"),
+  newChatBtn: document.getElementById("newChatBtn"),
+  sessionList: document.getElementById("chatSessionList"),
   chatMessages: document.getElementById("chatMessages"),
   userInput: document.getElementById("userInput"),
   sendBtn: document.getElementById("sendBtn"),
   micBtn: document.getElementById("micBtn"),
-  downloadBtn: document.getElementById("downloadBtn"),
+  themeBtn: document.getElementById("themeBtn"),
   languageSelect: document.getElementById("languageSelect"),
-  themeToggle: document.getElementById("themeToggle"),
-  suggestions: document.getElementById("suggestions"),
+  downloadBtn: document.getElementById("downloadBtn"),
 };
 
 const state = {
-  chatHistory: [],
+  language: "en",
+  sessions: [],
+  activeSessionId: null,
   typingNode: null,
-  activeLanguage: "en",
   recognition: null,
 };
 
 function init() {
-  setupTheme();
-  setupEvents();
-  loadChatHistory();
-  addWelcomeMessage();
+  loadTheme();
+  loadSessions();
+  bindEvents();
+  ensureSession();
+  renderSessionList();
+  renderActiveSessionMessages();
 }
 
-function setupTheme() {
-  const savedTheme = localStorage.getItem(STORAGE_KEYS.theme);
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
-    elements.themeToggle.checked = true;
+// ------------------- Initial Data -------------------
+function loadTheme() {
+  const theme = localStorage.getItem(STORAGE_KEYS.theme) || "light";
+  const dark = theme === "dark";
+  document.body.classList.toggle("dark", dark);
+  elements.themeBtn.textContent = dark ? "☀" : "🌙";
+}
+
+function loadSessions() {
+  const savedSessions = localStorage.getItem(STORAGE_KEYS.sessions);
+  const savedActiveId = localStorage.getItem(STORAGE_KEYS.activeSessionId);
+
+  if (savedSessions) {
+    try {
+      state.sessions = JSON.parse(savedSessions);
+      state.activeSessionId = savedActiveId;
+    } catch {
+      state.sessions = [];
+      state.activeSessionId = null;
+    }
   }
 }
 
-function setupEvents() {
-  elements.sendBtn.addEventListener("click", onSendMessage);
-  elements.userInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") onSendMessage();
-  });
+function ensureSession() {
+  if (!state.sessions.length) {
+    createNewSession();
+    return;
+  }
 
-  elements.userInput.addEventListener("input", debounce(onInputSuggestion, 300));
-
-  elements.languageSelect.addEventListener("change", (event) => {
-    state.activeLanguage = event.target.value;
-    hideSuggestions();
-  });
-
-  elements.themeToggle.addEventListener("change", () => {
-    document.body.classList.toggle("dark", elements.themeToggle.checked);
-    localStorage.setItem(STORAGE_KEYS.theme, elements.themeToggle.checked ? "dark" : "light");
-  });
-
-  elements.downloadBtn.addEventListener("click", downloadChatHistory);
-  elements.micBtn.addEventListener("click", startVoiceInput);
+  const exists = state.sessions.some((session) => session.id === state.activeSessionId);
+  if (!exists) {
+    state.activeSessionId = state.sessions[0].id;
+  }
 }
 
-function addWelcomeMessage() {
-  if (state.chatHistory.length > 0) return;
-  const text = "Hi! I am PICTOPEDIA 🤖. Ask me any topic and I will fetch a Wikipedia summary for you.";
-  addMessage("bot", { text });
+function persistSessions() {
+  localStorage.setItem(STORAGE_KEYS.sessions, JSON.stringify(state.sessions));
+  localStorage.setItem(STORAGE_KEYS.activeSessionId, state.activeSessionId);
 }
 
-function onSendMessage() {
+// ------------------- Session Handling -------------------
+function createNewSession() {
+  const id = `session-${Date.now()}`;
+  const newSession = {
+    id,
+    title: "New Chat",
+    createdAt: new Date().toISOString(),
+    messages: [
+      {
+        sender: "bot",
+        timestamp: getTimeStamp(),
+        text: "Hello! Ask any word or topic and I will fetch data from Wikipedia.",
+      },
+    ],
+  };
+
+  state.sessions.unshift(newSession);
+  state.activeSessionId = id;
+  persistSessions();
+  renderSessionList();
+  renderActiveSessionMessages();
+}
+
+function getActiveSession() {
+  return state.sessions.find((session) => session.id === state.activeSessionId);
+}
+
+function setActiveSession(sessionId) {
+  state.activeSessionId = sessionId;
+  persistSessions();
+  renderSessionList();
+  renderActiveSessionMessages();
+}
+
+function renderSessionList() {
+  elements.sessionList.innerHTML = "";
+
+  state.sessions.forEach((session) => {
+    const item = document.createElement("li");
+    item.className = `chat-session-item ${session.id === state.activeSessionId ? "active" : ""}`;
+    item.textContent = session.title;
+    item.title = session.title;
+    item.addEventListener("click", () => {
+      setActiveSession(session.id);
+      closeSidebarOnMobile();
+    });
+    elements.sessionList.appendChild(item);
+  });
+}
+
+function renderActiveSessionMessages() {
+  elements.chatMessages.innerHTML = "";
+  const session = getActiveSession();
+  if (!session) return;
+
+  session.messages.forEach((msg) => {
+    elements.chatMessages.appendChild(createMessageElement(msg));
+  });
+
+  autoScroll();
+}
+
+function updateSessionTitleFromFirstUserMessage(session) {
+  const firstUserMsg = session.messages.find((msg) => msg.sender === "user");
+  if (!firstUserMsg) return;
+  session.title = firstUserMsg.text.slice(0, 34) || "New Chat";
+}
+
+// ------------------- Messaging -------------------
+function addMessage(sender, payload) {
+  const session = getActiveSession();
+  if (!session) return;
+
+  const message = {
+    sender,
+    timestamp: getTimeStamp(),
+    ...payload,
+  };
+
+  session.messages.push(message);
+  updateSessionTitleFromFirstUserMessage(session);
+  persistSessions();
+
+  elements.chatMessages.appendChild(createMessageElement(message));
+  renderSessionList();
+  autoScroll();
+}
+
+function createMessageElement(message) {
+  const article = document.createElement("article");
+  article.className = `message ${message.sender}`;
+
+  const top = document.createElement("div");
+  top.className = "message-top";
+  top.innerHTML = `<span>${message.sender === "user" ? "You" : "PICTOPEDIA"}</span><time>${message.timestamp}</time>`;
+  article.appendChild(top);
+
+  if (message.title) {
+    const title = document.createElement("h3");
+    title.textContent = message.title;
+    article.appendChild(title);
+  }
+
+  if (message.text) {
+    const p = document.createElement("p");
+    p.textContent = message.text;
+    article.appendChild(p);
+  }
+
+  if (message.image) {
+    const img = document.createElement("img");
+    img.src = message.image;
+    img.alt = message.title || "Wikipedia image";
+    img.loading = "lazy";
+    article.appendChild(img);
+  }
+
+  if (message.link) {
+    const link = document.createElement("a");
+    link.href = message.link;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Read full article";
+    article.appendChild(link);
+  }
+
+  return article;
+}
+
+async function sendMessage() {
   const query = elements.userInput.value.trim();
-  hideSuggestions();
 
   if (!query) {
-    addMessage("bot", { text: "Please type or speak a topic before sending." });
+    addMessage("bot", { text: "Please type a word before searching." });
     return;
   }
 
   addMessage("user", { text: query });
   elements.userInput.value = "";
-  getWikipediaSummary(query);
-}
 
-async function getWikipediaSummary(query) {
-  showTypingIndicator();
-  const apiUrl = `https://${state.activeLanguage}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+  showTyping();
 
   try {
-    const response = await fetch(apiUrl);
+    const data = await fetchWikipediaSummary(query);
+    hideTyping();
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error("not_found");
-      }
-      throw new Error("api_error");
-    }
-
-    const data = await response.json();
-    hideTypingIndicator();
-
-    if (!data.extract) {
+    if (!data?.extract) {
       addMessage("bot", { text: "Sorry, I couldn't find information about that topic." });
       return;
     }
@@ -107,121 +237,53 @@ async function getWikipediaSummary(query) {
       title: data.title,
       text: data.extract,
       image: data.thumbnail?.source || "",
-      link: data.content_urls?.desktop?.page || `https://${state.activeLanguage}.wikipedia.org/wiki/${encodeURIComponent(query)}`,
-      speakText: `${data.title}. ${data.extract}`,
+      link: data.content_urls?.desktop?.page || `https://${state.language}.wikipedia.org/wiki/${encodeURIComponent(query)}`,
     });
   } catch (error) {
-    hideTypingIndicator();
+    hideTyping();
+
     if (error.message === "not_found") {
       addMessage("bot", { text: "Sorry, I couldn't find information about that topic." });
-      return;
+    } else {
+      addMessage("bot", { text: "Network issue. Please check your internet and try again." });
     }
-
-    addMessage("bot", {
-      text: "I couldn't connect to Wikipedia right now. Please check your internet connection and try again.",
-    });
   }
 }
 
-function addMessage(sender, payload) {
-  const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+async function fetchWikipediaSummary(searchTerm) {
+  const url = `https://${state.language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`;
+  const response = await fetch(url);
 
-  const messageData = {
-    sender,
-    timestamp,
-    ...payload,
-  };
+  if (response.status === 404) {
+    throw new Error("not_found");
+  }
 
-  state.chatHistory.push(messageData);
-  saveChatHistory();
+  if (!response.ok) {
+    throw new Error("api_error");
+  }
 
-  const messageNode = buildMessageNode(messageData);
-  elements.chatMessages.appendChild(messageNode);
-  autoScroll();
+  return response.json();
 }
 
-function buildMessageNode(message) {
-  const wrapper = document.createElement("article");
-  wrapper.className = `message ${message.sender}`;
-
-  const top = document.createElement("div");
-  top.className = "message-top";
-
-  const left = document.createElement("span");
-  left.className = message.sender === "bot" ? "bot-badge" : "";
-  left.textContent = message.sender === "bot" ? "🤖 PICTOPEDIA" : "You";
-
-  const time = document.createElement("time");
-  time.textContent = message.timestamp;
-
-  top.append(left, time);
-  wrapper.appendChild(top);
-
-  if (message.title) {
-    const title = document.createElement("h3");
-    title.textContent = message.title;
-    wrapper.appendChild(title);
-  }
-
-  if (message.text) {
-    const text = document.createElement("p");
-    text.textContent = message.text;
-    wrapper.appendChild(text);
-  }
-
-  if (message.image) {
-    const image = document.createElement("img");
-    image.src = message.image;
-    image.alt = message.title || "Wikipedia thumbnail";
-    image.loading = "lazy";
-    wrapper.appendChild(image);
-  }
-
-  if (message.link) {
-    const link = document.createElement("a");
-    link.href = message.link;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = "Read more on Wikipedia";
-    wrapper.appendChild(link);
-  }
-
-  if (message.sender === "bot" && message.speakText) {
-    const actions = document.createElement("div");
-    actions.className = "bot-actions";
-
-    const speakBtn = document.createElement("button");
-    speakBtn.className = "speak-btn";
-    speakBtn.type = "button";
-    speakBtn.title = "Speak this response";
-    speakBtn.textContent = "🔊";
-    speakBtn.addEventListener("click", () => speakText(message.speakText));
-
-    actions.appendChild(speakBtn);
-    wrapper.appendChild(actions);
-  }
-
-  return wrapper;
-}
-
-function showTypingIndicator() {
+function showTyping() {
   if (state.typingNode) return;
 
-  state.typingNode = document.createElement("article");
-  state.typingNode.className = "message bot";
-  state.typingNode.innerHTML = `
+  const node = document.createElement("article");
+  node.className = "message bot";
+  node.innerHTML = `
     <div class="message-top">
-      <span class="bot-badge">🤖 PICTOPEDIA</span>
-      <time>${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time>
+      <span>PICTOPEDIA</span>
+      <time>${getTimeStamp()}</time>
     </div>
-    <p>Bot is typing <span class="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></span></p>
+    <p>Typing <span class="typing-dots"><span></span><span></span><span></span></span></p>
   `;
 
-  elements.chatMessages.appendChild(state.typingNode);
+  state.typingNode = node;
+  elements.chatMessages.appendChild(node);
   autoScroll();
 }
 
-function hideTypingIndicator() {
+function hideTyping() {
   if (!state.typingNode) return;
   state.typingNode.remove();
   state.typingNode = null;
@@ -231,24 +293,42 @@ function autoScroll() {
   elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
 }
 
-function speakText(text) {
-  if (!("speechSynthesis" in window)) {
-    addMessage("bot", { text: "Text-to-speech is not supported in this browser." });
+function getTimeStamp() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+// ------------------- Extra Features -------------------
+function toggleTheme() {
+  const isDark = !document.body.classList.contains("dark");
+  document.body.classList.toggle("dark", isDark);
+  elements.themeBtn.textContent = isDark ? "☀" : "🌙";
+  localStorage.setItem(STORAGE_KEYS.theme, isDark ? "dark" : "light");
+}
+
+function downloadCurrentChat() {
+  const session = getActiveSession();
+  if (!session || !session.messages.length) {
+    addMessage("bot", { text: "Nothing to download yet." });
     return;
   }
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = state.activeLanguage;
-  utterance.rate = 1;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
+  const content = session.messages
+    .map((msg) => `${msg.sender === "user" ? "User" : "Bot"}: ${msg.title ? `${msg.title} - ` : ""}${msg.text || ""}`)
+    .join("\n");
+
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${session.title.replace(/[^a-z0-9]/gi, "_").toLowerCase() || "chat"}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-function startVoiceInput() {
+function startSpeechToText() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
   if (!SpeechRecognition) {
-    addMessage("bot", { text: "Speech recognition is not supported in this browser." });
+    addMessage("bot", { text: "Speech-to-text is not supported in this browser." });
     return;
   }
 
@@ -256,115 +336,47 @@ function startVoiceInput() {
     state.recognition = new SpeechRecognition();
     state.recognition.continuous = false;
     state.recognition.interimResults = false;
-
     state.recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      elements.userInput.value = transcript;
-      onSendMessage();
-    };
-
-    state.recognition.onerror = () => {
-      addMessage("bot", { text: "I couldn't hear clearly. Please try the microphone again." });
+      elements.userInput.value = event.results[0][0].transcript;
+      sendMessage();
     };
   }
 
-  state.recognition.lang = state.activeLanguage;
+  state.recognition.lang = state.language;
   state.recognition.start();
 }
 
-async function onInputSuggestion(event) {
-  const term = event.target.value.trim();
-  if (term.length < 2) {
-    hideSuggestions();
-    return;
-  }
+// ------------------- Responsive Sidebar -------------------
+function toggleSidebar() {
+  elements.appLayout.classList.toggle("sidebar-open");
+}
 
-  const url = `https://${state.activeLanguage}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(term)}&limit=6&namespace=0&format=json&origin=*`;
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    const suggestions = data[1] || [];
-    renderSuggestions(suggestions);
-  } catch {
-    hideSuggestions();
+function closeSidebarOnMobile() {
+  if (window.innerWidth <= 760) {
+    elements.appLayout.classList.remove("sidebar-open");
   }
 }
 
-function renderSuggestions(items) {
-  elements.suggestions.innerHTML = "";
-  if (!items.length) {
-    hideSuggestions();
-    return;
-  }
-
-  items.forEach((item) => {
-    const option = document.createElement("div");
-    option.className = "suggestion-item";
-    option.textContent = item;
-    option.addEventListener("click", () => {
-      elements.userInput.value = item;
-      hideSuggestions();
-      elements.userInput.focus();
-    });
-    elements.suggestions.appendChild(option);
+// ------------------- Events -------------------
+function bindEvents() {
+  elements.sendBtn.addEventListener("click", sendMessage);
+  elements.userInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") sendMessage();
   });
 
-  elements.suggestions.style.display = "block";
-}
+  elements.newChatBtn.addEventListener("click", createNewSession);
+  elements.themeBtn.addEventListener("click", toggleTheme);
+  elements.downloadBtn.addEventListener("click", downloadCurrentChat);
+  elements.micBtn.addEventListener("click", startSpeechToText);
 
-function hideSuggestions() {
-  elements.suggestions.style.display = "none";
-  elements.suggestions.innerHTML = "";
-}
-
-function saveChatHistory() {
-  localStorage.setItem(STORAGE_KEYS.chat, JSON.stringify(state.chatHistory));
-}
-
-function loadChatHistory() {
-  const saved = localStorage.getItem(STORAGE_KEYS.chat);
-  if (!saved) return;
-
-  try {
-    state.chatHistory = JSON.parse(saved);
-    state.chatHistory.forEach((entry) => {
-      const node = buildMessageNode(entry);
-      elements.chatMessages.appendChild(node);
-    });
-    autoScroll();
-  } catch {
-    state.chatHistory = [];
-  }
-}
-
-function downloadChatHistory() {
-  if (!state.chatHistory.length) {
-    addMessage("bot", { text: "No chat history available to download yet." });
-    return;
-  }
-
-  const lines = state.chatHistory.map((msg) => {
-    const name = msg.sender === "user" ? "User" : "Bot";
-    const core = msg.title ? `${msg.title} - ${msg.text || ""}` : msg.text || "";
-    return `${name}: ${core}`;
+  elements.languageSelect.addEventListener("change", (event) => {
+    state.language = event.target.value;
   });
 
-  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "pictopedia-chat-history.txt";
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
+  elements.menuBtn.addEventListener("click", toggleSidebar);
+  elements.overlay.addEventListener("click", closeSidebarOnMobile);
 
-function debounce(callback, delay = 250) {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => callback(...args), delay);
-  };
+  window.addEventListener("resize", closeSidebarOnMobile);
 }
 
 init();
