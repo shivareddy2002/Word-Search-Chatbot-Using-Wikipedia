@@ -18,6 +18,7 @@
 
       <div class="sidebar-search-wrap">
         <input id="conversationSearch" type="text" placeholder="Search in current chat..." />
+        <small id="searchStatus" class="search-status"></small>
       </div>
 
       <div class="sidebar-list" id="chatList"></div>
@@ -29,7 +30,7 @@
           <button id="menuBtn" class="icon-btn mobile-only" type="button" aria-label="Open sidebar">☰</button>
           <div>
             <h1>PICTOPEDIA</h1>
-            <p>Wikipedia + AI-style Chatbot</p>
+            <p>Wikipedia Search Chatbot</p>
           </div>
         </div>
 
@@ -53,7 +54,6 @@
       <section class="messages" id="messages" aria-live="polite"></section>
 
       <footer class="composer-wrap">
-        <div id="suggestions" class="suggestions"></div>
         <div class="composer">
           <button id="micBtn" class="icon-btn" type="button" title="Speech to text">🎤</button>
           <input id="promptInput" type="text" placeholder="Ask anything from Wikipedia..." autocomplete="off" />

@@ -14,7 +14,7 @@ const els = {
   chatList: document.getElementById("chatList"),
   messages: document.getElementById("messages"),
   input: document.getElementById("promptInput"),
-  suggestions: document.getElementById("suggestions"),
+  searchStatus: document.getElementById("searchStatus"),
   conversationSearch: document.getElementById("conversationSearch"),
   sendBtn: document.getElementById("sendBtn"),
   newChatBtn: document.getElementById("newChatBtn"),
@@ -118,8 +118,7 @@ function createSession() {
       {
         id: uid("m"),
         role: "bot",
-        text: "Hello! Ask a question and I will fetch Wikipedia information with an AI-style explanation.",
-        aiExplanation: "",
+        text: "Hello! Ask a question and I will fetch Wikipedia information for you.",
         title: "",
         image: "",
         link: "",
@@ -251,7 +250,6 @@ function addMessage(role, payload) {
     id: uid("m"),
     role,
     text: payload.text || "",
-    aiExplanation: payload.aiExplanation || "",
     title: payload.title || "",
     image: payload.image || "",
     link: payload.link || "",
@@ -278,6 +276,7 @@ function renderMessages() {
   session.messages.forEach((msg) => {
     els.messages.appendChild(buildMessageNode(msg));
   });
+  if (els.conversationSearch.value.trim()) runConversationSearch();
   autoScroll();
 }
 
@@ -310,9 +309,6 @@ function buildMessageNode(message) {
   }
 
   const titleHTML = message.title ? `<h3 class="bot-title">${escapeHtml(message.title)}</h3>` : "";
-  const aiHTML = message.aiExplanation
-    ? `<p class="bot-section-label">AI Explanation</p>${renderRichText(message.aiExplanation)}`
-    : "";
   const wikiBody = renderRichText(message.text || "");
   const readLink = message.link
     ? ` <a href="${message.link}" target="_blank" rel="noopener noreferrer">Read full article</a>`
@@ -321,7 +317,6 @@ function buildMessageNode(message) {
 
   article.innerHTML = `
     ${titleHTML}
-    ${aiHTML}
     <p class="bot-section-label">Wikipedia Summary</p>
     ${wikiBody}
     <p class="bot-body">${readLink}</p>
@@ -352,13 +347,13 @@ function onMessageAction(event) {
   if (!msg) return;
 
   if (action === "copy") {
-    const text = [msg.title, msg.aiExplanation, msg.text].filter(Boolean).join("\n\n");
+    const text = [msg.title, msg.text].filter(Boolean).join("\n\n");
     copyText(text || msg.text);
     return;
   }
 
   if (action === "speak") {
-    speakText(msg.text || msg.aiExplanation || msg.title);
+    speakText(msg.text || msg.title);
     return;
   }
 
@@ -379,7 +374,6 @@ function onMessageAction(event) {
         id: uid("m"),
         role: "bot",
         text: "This chat is empty now. Ask something to continue.",
-        aiExplanation: "",
         title: "",
         image: "",
         link: "",
@@ -420,7 +414,6 @@ async function fetchAndRenderBot(question) {
 
     addMessage("bot", {
       title: data.title || "",
-      aiExplanation: buildAIExplanation(data.extract),
       text: data.extract,
       image: data.thumbnail?.source || "",
       link: data.content_urls?.desktop?.page || `https://${state.language}.wikipedia.org/wiki/${encodeURIComponent(question)}`,
@@ -455,12 +448,6 @@ async function fetchSummary(query) {
   return res.json();
 }
 
-function buildAIExplanation(summary) {
-  const cleaned = summary.replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
-  const firstSentence = cleaned.split(/(?<=[.!?])\s/)[0] || cleaned;
-  return `In simple words, ${firstSentence.charAt(0).toLowerCase() + firstSentence.slice(1)}`;
-}
-
 function showTyping() {
   if (state.typingNode) return;
 
@@ -487,59 +474,21 @@ function runConversationSearch() {
   const cards = Array.from(els.messages.querySelectorAll(".msg"));
 
   cards.forEach((card) => card.classList.remove("highlight"));
-  if (!term) return;
+  if (!term) {
+    els.searchStatus.textContent = "";
+    return;
+  }
 
   const matches = cards.filter((card) => card.textContent.toLowerCase().includes(term));
   matches.forEach((card) => card.classList.add("highlight"));
 
-  if (matches[0]) {
-    matches[0].scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-}
-
-async function onInputSuggestions() {
-  const term = els.input.value.trim();
-  if (term.length < 2) {
-    hideSuggestions();
+  if (!matches.length) {
+    els.searchStatus.textContent = "No messages found";
     return;
   }
 
-  const url = `https://${state.language}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(term)}&limit=6&namespace=0&format=json&origin=*`;
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    renderSuggestions(data?.[1] || []);
-  } catch {
-    hideSuggestions();
-  }
-}
-
-function renderSuggestions(items) {
-  els.suggestions.innerHTML = "";
-
-  if (!items.length) {
-    hideSuggestions();
-    return;
-  }
-
-  items.forEach((item) => {
-    const row = document.createElement("div");
-    row.className = "suggestion-item";
-    row.textContent = item;
-    row.addEventListener("click", () => {
-      els.input.value = item;
-      hideSuggestions();
-      els.input.focus();
-    });
-    els.suggestions.appendChild(row);
-  });
-
-  els.suggestions.style.display = "block";
-}
-
-function hideSuggestions() {
-  els.suggestions.style.display = "none";
-  els.suggestions.innerHTML = "";
+  els.searchStatus.textContent = `${matches.length} message${matches.length > 1 ? "s" : ""} found`;
+  matches[0].scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function speakText(text) {
@@ -577,7 +526,7 @@ function downloadChatAsTXT() {
 
   const lines = session.messages.map((m) => {
     if (m.role === "user") return `User: ${m.text}`;
-    return `Bot: ${m.title ? `${m.title} - ` : ""}${m.aiExplanation ? `AI Explanation: ${m.aiExplanation} | ` : ""}${m.text}`;
+    return `Bot: ${m.title ? `${m.title} - ` : ""}${m.text}`;
   });
 
   const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
@@ -598,7 +547,7 @@ function exportChatAsPDF() {
     `Chat Title: ${session.title}`,
     `Date: ${now}`,
     "",
-    ...session.messages.map((m) => `${m.role === "user" ? "User" : "Bot"}: ${m.title ? `${m.title} - ` : ""}${m.aiExplanation ? `AI: ${m.aiExplanation}. ` : ""}${m.text}`),
+    ...session.messages.map((m) => `${m.role === "user" ? "User" : "Bot"}: ${m.title ? `${m.title} - ` : ""}${m.text}`),
   ];
 
   const pdfBytes = createSimplePDF(lines);
@@ -678,7 +627,6 @@ function bindEvents() {
   els.input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") handleSend();
   });
-  els.input.addEventListener("input", debounce(onInputSuggestions, 280));
 
   els.newChatBtn.addEventListener("click", () => {
     createSession();
@@ -698,7 +646,6 @@ function bindEvents() {
   els.languageSelect.addEventListener("change", (e) => {
     state.language = e.target.value;
     localStorage.setItem(STORAGE.LANG, state.language);
-    hideSuggestions();
   });
 
   els.menuBtn.addEventListener("click", openMobileSidebar);
