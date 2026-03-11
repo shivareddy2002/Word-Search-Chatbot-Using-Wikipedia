@@ -41,7 +41,6 @@ User Input ➡️ Input Handling ➡️ API Request ➡️ Response Processing �
 
 <p align="center">
   <img src="https://github.com/shivareddy2002/Word-Search-Chatbot-Using-Wikipedia/blob/main/workflow.png" width="600"/>
-  <img width="285" src="https://github.com/user-attachments/assets/c9e79365-bc9d-4468-be03-61aea052b0c4" />
 </p>
 
 ---
