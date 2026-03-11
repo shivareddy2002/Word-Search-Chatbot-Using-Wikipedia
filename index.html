@@ -16,6 +16,10 @@
         <button id="newChatBtn" class="btn btn-primary" type="button">+ New Chat</button>
       </div>
 
+      <div class="sidebar-search-wrap">
+        <input id="conversationSearch" type="text" placeholder="Search in current chat..." />
+      </div>
+
       <div class="sidebar-list" id="chatList"></div>
     </aside>
 
@@ -25,7 +29,7 @@
           <button id="menuBtn" class="icon-btn mobile-only" type="button" aria-label="Open sidebar">☰</button>
           <div>
             <h1>PICTOPEDIA</h1>
-            <p>Wikipedia Chatbot</p>
+            <p>Wikipedia + AI-style Chatbot</p>
           </div>
         </div>
 
@@ -41,7 +45,8 @@
             <option value="mr">Marathi (mr)</option>
           </select>
           <button id="themeBtn" class="icon-btn" type="button" title="Toggle theme">🌙</button>
-          <button id="downloadBtn" class="icon-btn" type="button" title="Download chat">⬇</button>
+          <button id="downloadBtn" class="icon-btn" type="button" title="Download chat as text">⬇ TXT</button>
+          <button id="pdfBtn" class="icon-btn" type="button" title="Export chat as PDF">📄 PDF</button>
         </div>
       </header>
 
