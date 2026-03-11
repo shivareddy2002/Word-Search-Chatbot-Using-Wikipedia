@@ -390,6 +390,7 @@ async function handleSend() {
   const question = els.input.value.trim();
   if (!question) return;
 
+  hideSuggestions();
   addMessage("user", { text: question });
   els.input.value = "";
 
