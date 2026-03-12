@@ -134,8 +134,6 @@ html, body {
 
 .user-line { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; }
 .user-time { font-size: 0.74rem; opacity: 0.9; }
-.bot-title { margin: 0 0 0.35rem; }
-.bot-section-label { margin: 0.35rem 0 0.2rem; font-size: 0.78rem; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; }
 .bot-body { margin: 0; line-height: 1.5; }
 .bot-body a { color: #0284c7; font-weight: 600; }
 .msg img { margin-top: 0.6rem; width: 100%; max-width: 280px; border-radius: 0.6rem; }
