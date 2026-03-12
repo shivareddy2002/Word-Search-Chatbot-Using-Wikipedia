@@ -1,5 +1,5 @@
 // ===============================================================
-// PICTOPEDIA - Wikipedia + AI-Style Chatbot (Vanilla JavaScript)
+// WORD SEARCH CHAT BOT - Wikipedia + Conversational Assistant (Vanilla JavaScript)
 // ===============================================================
 const STORAGE = {
   THEME: "pictopedia-theme",
@@ -30,6 +30,7 @@ const state = {
   language: "en",
   typingNode: null,
   recognition: null,
+  isMicListening: false,
 };
 function init() {
   loadTheme();
@@ -265,25 +266,46 @@ function userAskedForArticleLink(question) {
 }
 function getConversationalReply(question) {
   const clean = question.trim().toLowerCase();
+
   if (/^(hi|hello|hey|hii|hola)\b/.test(clean)) {
-    return "Hi! How are you doing today? What would you like to explore on Wikipedia?";
+    return "Hi! I’m doing well—thanks for checking in. 😊 How are you doing today? If you want, I can also help you explore any topic in detail.";
   }
+
   if (/how are you|how r u|how're you/.test(clean)) {
-    return "I am doing great, thanks for asking. I am ready to help you with any topic you want to learn.";
+    return "I’m doing great and ready to help. Tell me what you want to learn, and I’ll give you a clear and detailed explanation.";
   }
+
   if (/^(thanks|thank you|thx)\b/.test(clean)) {
-    return "You are welcome! I am happy to help. Ask me anything else whenever you want.";
+    return "You’re very welcome! I’m glad that helped. If you want, we can go deeper into the same topic or move to a new one.";
   }
+
   if (/^(bye|goodbye|see you)\b/.test(clean)) {
-    return "Goodbye! Have a great day, and come back anytime for more knowledge.";
+    return "Goodbye! It was great chatting with you. Have a wonderful day, and come back anytime.";
   }
+
   return "";
 }
-function buildAnswerText(question, extract) {
-  const intro = /^(who|what|when|where|why|how|tell me|explain)\b/i.test(question.trim())
-    ? "Here is a quick explanation: "
-    : "Sure, here is what I found: ";
-  return `${intro}${extract}`;
+
+function buildAnswerText(question, extract, details = "") {
+  const cleanedExtract = (extract || "").trim();
+  const cleanedDetails = (details || "").trim();
+
+  if (!cleanedExtract && !cleanedDetails) {
+    return "I could not find enough details for that topic. Please try rephrasing your question.";
+  }
+
+  const toneLead = /^(who|what|when|where|why|how|tell me|explain|describe)\b/i.test(question.trim())
+    ? "Great question. "
+    : "Sure. ";
+
+  if (!cleanedDetails) {
+    return `${toneLead}${cleanedExtract}`;
+  }
+
+  return `${toneLead}${cleanedExtract}
+
+More details:
+${cleanedDetails}`;
 }
 function buildMessageNode(message) {
   const article = document.createElement("article");
@@ -311,7 +333,7 @@ function buildMessageNode(message) {
     ? `<img src="${message.image}" alt="Wikipedia preview image" loading="lazy" />`
     : "";
   article.innerHTML = `
-    <p class="bot-body"><strong>Answer:</strong> ${answerText}${readLink}</p>
+    <p class="bot-body">${answerText}${readLink}</p>
     ${imageHTML}
     <div class="msg-actions">
       <button class="action-btn" data-msg-action="copy">Copy</button>
@@ -393,9 +415,11 @@ async function fetchAndRenderBot(question) {
       });
       return;
     }
+    const details = await fetchDetailedExtract(data.title || question);
+
     addMessage("bot", {
       title: "",
-      text: buildAnswerText(question, data.extract),
+      text: buildAnswerText(question, data.extract, details),
       image: data.thumbnail?.source || "",
       link: data.content_urls?.desktop?.page || `https://${state.language}.wikipedia.org/wiki/${encodeURIComponent(question)}`,
       showImage: userAskedForImage(question),
@@ -410,6 +434,22 @@ async function fetchAndRenderBot(question) {
     });
   }
 }
+
+async function fetchDetailedExtract(title) {
+  const detailsUrl = `https://${state.language}.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&origin=*&titles=${encodeURIComponent(title)}`;
+  const detailsRes = await fetch(detailsUrl);
+  if (!detailsRes.ok) return "";
+
+  const detailsData = await detailsRes.json();
+  const pages = detailsData?.query?.pages || {};
+  const firstPage = Object.values(pages)[0];
+  const fullText = (firstPage?.extract || "").trim();
+  if (!fullText) return "";
+
+  const sentences = fullText.split(/(?<=[.!?])\s+/).filter(Boolean);
+  return sentences.slice(0, 12).join(" ");
+}
+
 async function fetchSummary(query) {
   const summaryUrl = `https://${state.language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
   let res = await fetch(summaryUrl);
@@ -468,20 +508,56 @@ function speakText(text) {
 }
 function startMic() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
   if (!SpeechRecognition) {
-    addMessage("bot", { text: "Speech-to-text is not supported in this browser." });
+    addMessage("bot", {
+      text: "Your browser does not support speech-to-text. Please use Chrome, Edge, or another supported browser.",
+    });
+    return;
+  }
+
+  if (!window.isSecureContext) {
+    addMessage("bot", {
+      text: "Microphone access needs a secure page (HTTPS or localhost). Please open this app on localhost or HTTPS and try again.",
+    });
     return;
   }
   if (!state.recognition) {
     state.recognition = new SpeechRecognition();
     state.recognition.continuous = false;
     state.recognition.interimResults = false;
+
+    state.recognition.onstart = () => {
+      state.isMicListening = true;
+      els.micBtn.textContent = "⏹️";
+      els.micBtn.title = "Stop listening";
+    };
+
+    state.recognition.onend = () => {
+      state.isMicListening = false;
+      els.micBtn.textContent = "🎤";
+      els.micBtn.title = "Speech to text";
+    };
+
+    state.recognition.onerror = (event) => {
+      const reason = event?.error || "unknown error";
+      addMessage("bot", { text: `I could not capture your voice input (${reason}). Please allow microphone permission and try again.` });
+    };
+
     state.recognition.onresult = (e) => {
-      els.input.value = e.results[0][0].transcript;
+      const transcript = e?.results?.[0]?.[0]?.transcript?.trim();
+      if (!transcript) return;
+      els.input.value = transcript;
       handleSend();
     };
   }
   state.recognition.lang = state.language;
+
+  if (state.isMicListening) {
+    state.recognition.stop();
+    return;
+  }
+
   state.recognition.start();
 }
 function downloadChatAsTXT() {
