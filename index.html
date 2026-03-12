@@ -13,9 +13,34 @@
   <div class="app" id="app">
     <div class="mobile-backdrop" id="mobileBackdrop"></div>
 
+    <header class="app-header">
+      <div class="app-header-left">
+        <button id="menuBtn" class="icon-btn" type="button" aria-label="Toggle sidebar">☰</button>
+        <h2>CHAT BOT</h2>
+      </div>
+
+      <div class="app-header-center">
+        <h1>Word Search Chat Bot</h1>
+      </div>
+
+      <div class="app-header-right">
+        <select id="languageSelect" title="Select language">
+          <option value="en">English </option>
+          <option value="hi">Hindi </option>
+          <option value="te">Telugu </option>
+          <option value="ta">Tamil </option>
+          <option value="kn">Kannada </option>
+          <option value="ml">Malayalam </option>
+          <option value="bn">Bengali </option>
+          <option value="mr">Marathi </option>
+        </select>
+        <button id="themeBtn" class="icon-btn" type="button" title="Toggle theme">🌙</button>
+        <button id="downloadBtn" class="icon-btn" type="button" title="Download chat as text">📩</button>
+      </div>
+    </header>
+
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h2>CHAT BOT</h2>
         <button id="newChatBtn" class="btn btn-primary" type="button">➕ New Chat</button>
       </div>
 
@@ -28,30 +53,6 @@
     </aside>
 
     <main class="main">
-      <header class="topbar">
-        <div class="topbar-left">
-          <button id="menuBtn" class="icon-btn mobile-only" type="button" aria-label="Open sidebar">☰</button>
-          <div>
-            <h1>Word Search Chat Bot</h1>
-          </div>
-        </div>
-
-        <div class="topbar-right">
-          <select id="languageSelect" title="Select language">
-            <option value="en">English </option>
-            <option value="hi">Hindi </option>
-            <option value="te">Telugu </option>
-            <option value="ta">Tamil </option>
-            <option value="kn">Kannada </option>
-            <option value="ml">Malayalam </option>
-            <option value="bn">Bengali </option>
-            <option value="mr">Marathi </option>
-          </select>
-          <button id="themeBtn" class="icon-btn" type="button" title="Toggle theme">🌙</button>
-          <button id="downloadBtn" class="icon-btn" type="button" title="Download chat as text">📩</button>
-        </div>
-      </header>
-
       <section class="messages" id="messages" aria-live="polite"></section>
 
       <footer class="composer-wrap">

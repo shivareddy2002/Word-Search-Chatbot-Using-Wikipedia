@@ -6,9 +6,11 @@ const STORAGE = {
   SESSIONS: "pictopedia-sessions",
   ACTIVE: "pictopedia-active-session",
   LANG: "pictopedia-language",
+  SIDEBAR: "pictopedia-sidebar-collapsed",
 };
 const els = {
   app: document.getElementById("app"),
+  sidebar: document.getElementById("sidebar"),
   chatList: document.getElementById("chatList"),
   messages: document.getElementById("messages"),
   input: document.getElementById("promptInput"),
@@ -35,6 +37,7 @@ const state = {
 function init() {
   loadTheme();
   loadLanguage();
+  loadSidebarState();
   loadSessions();
   ensureSession();
   bindEvents();
@@ -93,6 +96,10 @@ function loadLanguage() {
   if (!lang) return;
   state.language = lang;
   els.languageSelect.value = lang;
+}
+function loadSidebarState() {
+  const collapsed = localStorage.getItem(STORAGE.SIDEBAR) === "collapsed";
+  els.app.classList.toggle("sidebar-collapsed", collapsed && window.innerWidth > 760);
 }
 function createSession() {
   const session = {
@@ -583,13 +590,26 @@ function toggleTheme() {
   localStorage.setItem(STORAGE.THEME, dark ? "dark" : "light");
   els.themeBtn.textContent = dark ? "☀" : "🌙";
 }
-function openMobileSidebar() {
-  els.app.classList.add("sidebar-open");
+function toggleSidebar() {
+  if (window.innerWidth <= 760) {
+    els.app.classList.toggle("sidebar-open");
+    return;
+  }
+  const collapsed = els.app.classList.toggle("sidebar-collapsed");
+  localStorage.setItem(STORAGE.SIDEBAR, collapsed ? "collapsed" : "expanded");
 }
 function closeMobileSidebar() {
   if (window.innerWidth <= 760) {
     els.app.classList.remove("sidebar-open");
   }
+}
+function syncSidebarForViewport() {
+  if (window.innerWidth <= 760) {
+    els.app.classList.remove("sidebar-collapsed");
+    return;
+  }
+  loadSidebarState();
+  els.app.classList.remove("sidebar-open");
 }
 function bindEvents() {
   els.sendBtn.addEventListener("click", handleSend);
@@ -611,9 +631,9 @@ function bindEvents() {
     state.language = e.target.value;
     localStorage.setItem(STORAGE.LANG, state.language);
   });
-  els.menuBtn.addEventListener("click", openMobileSidebar);
+  els.menuBtn.addEventListener("click", toggleSidebar);
   els.mobileBackdrop.addEventListener("click", closeMobileSidebar);
-  window.addEventListener("resize", closeMobileSidebar);
+  window.addEventListener("resize", syncSidebarForViewport);
   els.suggestionTray?.addEventListener("click", (event) => {
     const btn = event.target.closest("[data-suggestion]");
     if (!btn) return;
@@ -621,4 +641,5 @@ function bindEvents() {
     handleSend();
   });
 }
+syncSidebarForViewport();
 init();
