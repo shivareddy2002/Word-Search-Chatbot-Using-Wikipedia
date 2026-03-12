@@ -522,7 +522,6 @@ function startMic() {
     });
     return;
   }
-
   if (!state.recognition) {
     state.recognition = new SpeechRecognition();
     state.recognition.continuous = false;
@@ -552,7 +551,6 @@ function startMic() {
       handleSend();
     };
   }
-
   state.recognition.lang = state.language;
 
   if (state.isMicListening) {
