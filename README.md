@@ -1,307 +1,277 @@
-<!-- # PICTOPEDIA — Wikipedia Search Chatbot
+<p align="center">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00c6ff,100:0072ff&height=180&section=header&text=🧠%20PICTOPEDIA%20—%20Wikipedia%20Search%20Chatbot&fontSize=34&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
+</p>
 
-PICTOPEDIA is a modern, client-side Wikipedia chatbot built with **HTML, CSS, and JavaScript**.
-It provides a polished chat experience with multi-session history, language support, voice input, and export options.
+PICTOPEDIA is a modern **Wikipedia Search Chatbot** built using **HTML, CSS, and JavaScript**.
+It allows users to search topics, ask questions, and retrieve information directly from **Wikipedia APIs** through an interactive conversational interface.
 
-## ✨ Highlights
+The application includes **multi-chat sessions, multilingual search, voice input, and conversation export features**, providing a rich and interactive knowledge exploration experience. 🚀
 
-- Professional glassmorphism-based UI with light/dark theme.
-- Wikipedia summary search with fallback query resolution.
-- Multi-chat sidebar with rename, pin, share, and delete actions.
-- In-chat search and quick suggestion chips for fast exploration.
-- Speech-to-text input and text-to-speech output (browser supported).
-- Export active conversation as **TXT** or **PDF**.
-- Fully responsive layout optimized for desktop and mobile.
+---
 
-## 🚀 Run Locally
+# 🔗 Live Demo
 
-Because this project uses browser APIs and fetch calls, run it through a local server:
+Try the deployed application here:
 
-```bash
-python3 -m http.server 4173
-```
+**PICTOPEDIA — Wikipedia Search Chatbot**
+🌐 https://word-search-chatbot-using-wikipedia.vercel.app/
 
-Then open: `http://localhost:4173`
+---
 
-## 🧩 Tech Stack
+# 🚀 Project Overview
 
-- HTML5
-- CSS3 (custom properties + responsive layout)
-- Vanilla JavaScript (ES6+)
-- Wikipedia REST + OpenSearch APIs
+This project demonstrates how to build a **client-side conversational chatbot** that retrieves and displays knowledge from Wikipedia.
 
-## 📁 Project Structure
+The workflow involves the following steps:
 
-- `index.html` — App layout and UI structure.
-- `style.css` — Theme, responsive design, and component styles.
-- `script.js` — State management, event handling, Wikipedia API integration, exports.
+### 1️⃣ User Query Input
 
-## 🔍 Notes
+The user enters a question or search query in the chat interface.
 
-- Voice features depend on browser support (`SpeechRecognition` and `speechSynthesis`).
-- Chat history is stored in browser `localStorage`. -->
-# 🧠 PICTOPEDIA — Wikipedia Search Chatbot
+Example:
+What is Artificial Intelligence
 
-PICTOPEDIA is a modern client-side conversational chatbot that retrieves information from Wikipedia and presents it in an interactive chat interface.
+---
 
-The application allows users to search topics, ask questions, and explore knowledge interactively using Wikipedia APIs. It supports multi-chat sessions, voice input, multilingual search, and conversation export.
+### 2️⃣ Query Processing
 
-This project demonstrates JavaScript frontend engineering, API integration, and conversational UI design using HTML, CSS, and Vanilla JavaScript.
+The application processes the user query and prepares it for Wikipedia API requests.
 
---------------------------------------------------
+The chatbot also handles simple conversational messages such as:
 
-# 🌐 Live Demo
+* Hello
+* Hi
+* Thank you
+* Goodbye
 
-https://word-search-chatbot-using-wikipedia.vercel.app/
+These responses are generated locally without external API calls.
 
---------------------------------------------------
+---
 
-# ✨ Features
+### 3️⃣ Wikipedia API Request
 
-### 💬 Conversational Chat Interface
-Users can ask questions naturally (example: What is Artificial Intelligence) and receive Wikipedia-based responses.
+The chatbot sends a request to the **Wikipedia REST API** to retrieve article summaries.
 
-### 📚 Wikipedia Knowledge Retrieval
-The chatbot retrieves:
-• Article summaries  
-• Detailed extracts  
-• Article links  
-• Preview images  
+API example:
 
-using Wikipedia APIs.
+https://en.wikipedia.org/api/rest_v1/page/summary/query
 
-### 🧠 Smart Conversational Responses
-The chatbot handles simple conversations such as:
-• Hello / Hi  
-• How are you  
-• Thanks  
-• Goodbye  
+If the exact page is not found, the application uses the **Wikipedia OpenSearch API** to find the best matching article.
 
-These responses are generated locally without API calls.
+---
 
-### 🗂 Multi-Chat Sessions
-Users can create and manage multiple chat sessions.
+### 4️⃣ Response Processing
 
-Each session supports:
-• Rename chat  
-• Pin / Unpin chat  
-• Share chat  
-• Delete chat  
-• Chat history persistence  
+The retrieved Wikipedia data includes:
 
-All sessions are stored in browser localStorage.
+* Article title
+* Summary description
+* Preview image
+* Wikipedia article link
 
-### 🔍 Conversation Search
-Users can search inside conversations to quickly find messages.
+This information is formatted and displayed inside the chatbot conversation.
 
-### 🎤 Voice Input
-Speech-to-text input using Web Speech API.
+---
 
-Supported browsers:
-• Chrome  
-• Edge  
-• Brave  
+### 5️⃣ Displaying the Response
 
-### 🔊 Text-to-Speech
-Chatbot responses can be spoken using the Speech Synthesis API.
+The chatbot shows the response as a **chat message**, including:
 
-### 🌍 Multi-language Wikipedia Search
-Users can switch language to search Wikipedia in different languages.
+* Article summary
+* Image preview (if available)
+* Link to the full Wikipedia page
 
-Examples:
-• English  
-• Hindi  
-• Telugu  
-• Spanish  
-• French  
+---
 
-### 🖼 Image Support
-If users ask for images, the chatbot includes Wikipedia preview images.
+### 6️⃣ Chat Session Management
 
-Example query:
-show image of taj mahal
+The application supports **multiple chat sessions**.
 
-### 🔗 Article Links
-Users can open the full Wikipedia article directly from chat.
+Each session allows:
 
-### 💾 Export Chat
-Users can export the active conversation as:
+* Rename chat
+* Pin / Unpin chat
+* Delete chat
+* Save conversation history
 
-• TXT file  
-• PDF (depending on version)
+All chat sessions are stored in **browser localStorage**.
 
-### 🎨 Modern UI
-The interface includes:
+---
 
-• Glassmorphism UI  
-• Dark / Light theme toggle  
-• Responsive mobile layout  
-• Sidebar chat history  
+### 7️⃣ Voice Interaction
 
---------------------------------------------------
+The chatbot supports voice interaction using browser APIs.
 
-# 🛠 Tech Stack
+Voice Input:
 
-HTML5 — Application structure  
-CSS3 — UI styling and layout  
-JavaScript (ES6+) — Application logic  
-Wikipedia REST API — Article summaries  
-Wikipedia OpenSearch API — Query resolution  
-Web Speech API — Speech-to-text  
-SpeechSynthesis API — Text-to-speech  
-LocalStorage — Chat persistence  
+* SpeechRecognition API converts speech into text.
 
---------------------------------------------------
+Text-to-Speech:
+
+* SpeechSynthesis API reads chatbot responses aloud.
+
+---
+
+# 🚀 Key Features
+
+* Interactive **chat-based Wikipedia search**
+* **Multi-chat sessions** with history persistence
+* **Multilingual Wikipedia search**
+* **Voice input** using Web Speech API
+* **Text-to-speech responses**
+* **Image preview support**
+* **Conversation search**
+* **Export chat as TXT or PDF**
+* Modern **Glassmorphism UI**
+* **Dark / Light theme toggle**
+* Fully **responsive layout**
+
+---
+
+# 🧰 Tech Stack
+
+* **HTML5** — Application structure
+* **CSS3** — UI styling and responsive layout
+* **JavaScript (ES6+)** — Application logic
+* **Wikipedia REST API** — Article summaries
+* **Wikipedia OpenSearch API** — Query resolution
+* **Web Speech API** — Speech-to-text input
+* **SpeechSynthesis API** — Text-to-speech output
+* **LocalStorage** — Chat session persistence
+
+---
 
 # 📁 Project Structure
 
 Word-Search-Chatbot-Using-Wikipedia
 
-index.html  
-style.css  
-script.js  
-README.md  
+index.html — Application UI layout
+style.css — Styling and responsive design
+script.js — Chat logic and API integration
+README.md — Project documentation
 
---------------------------------------------------
-
-### index.html
-Defines the chatbot layout including:
-
-• Chat window  
-• Input field  
-• Sidebar  
-• Chat history  
-• Control buttons  
-
-### style.css
-Handles:
-
-• UI styling  
-• Light/Dark theme  
-• Responsive layout  
-• Chat bubble design  
-
-### script.js
-Contains the core logic:
-
-• Chat session management  
-• Message rendering  
-• Wikipedia API integration  
-• Voice input/output  
-• Chat search  
-• Export features  
-
---------------------------------------------------
+---
 
 # ⚙️ How It Works
 
-### 1. Application Initialization
+### Initialization
 
-The application starts with the init() function.
+When the application loads, the `init()` function performs the following:
 
-This function:
-
-• Loads saved theme  
-• Loads language preference  
-• Loads chat sessions  
-• Creates session if none exists  
-• Binds UI event listeners  
-• Renders the interface  
-
---------------------------------------------------
-
-### 2. Chat Sessions
-
-Each session stores:
-
-id  
-title  
-pinned  
-createdAt  
-messages
-
-Messages contain:
-
-id  
-role  
-text  
-image  
-link  
-query  
-time  
+* Loads saved theme preferences
+* Loads language settings
+* Retrieves stored chat sessions
+* Creates a new session if none exists
+* Binds UI event listeners
 
 ---
 
-### 3. Sending a Message
+### Sending a Message
 
-When the user submits a question the following process occurs:
+When a user sends a message:
 
-1 Capture user input  
-2 Add user message to chat  
-3 Fetch Wikipedia data  
-4 Render bot response  
-
----
-
-### 4. Wikipedia API Integration
-
-Summary API
-
-https://language.wikipedia.org/api/rest_v1/page/summary/query
-
-Used to fetch:
-
-• Article title  
-• Summary  
-• Image  
-• Link  
-
-OpenSearch API
-
-https://language.wikipedia.org/w/api.php?action=opensearch
-
-Used when the exact page title is not found.
-
-Detailed Extract API
-
-https://language.wikipedia.org/w/api.php?action=query&prop=extracts
-
-Used to fetch additional article details.
+1. Capture the user input
+2. Display the user message
+3. Request data from Wikipedia API
+4. Process the response
+5. Display the chatbot reply
 
 ---
 
-### 5. Voice Input
+### Data Returned from Wikipedia
 
-Voice input uses SpeechRecognition.
+The chatbot extracts the following fields:
 
-Process:
-
-1 User clicks microphone button  
-2 Browser records voice  
-3 Speech converted to text  
-4 Query automatically sent  
+* Title
+* Extract (summary)
+* Thumbnail image
+* Article URL
 
 ---
 
-### 6. Text-to-Speech
+# 🔍 Example Query
 
-Bot responses can be spoken using speechSynthesis.
+User Input:
 
-Example logic:
+What is Machine Learning
 
-Create speech utterance from response text and send it to speechSynthesis engine for playback.
+Chatbot Response:
 
-
-
-# 📌 Future Improvements
-
-Possible enhancements:
-
-• AI powered responses  
-• Better conversation context  
-• Image gallery support  
-• Knowledge graph integration  
-• Chat analytics dashboard  
-• Improved multilingual support  
+Machine learning is a field of artificial intelligence that enables systems to learn from data and improve their performance without explicit programming.
 
 ---
+
+# 📊 Application Workflow
+
+```mermaid
+flowchart LR
+
+subgraph UI[User Interface]
+A[User enters query]
+end
+
+subgraph API[Wikipedia API]
+B[Send request]
+C[Receive article summary]
+end
+
+subgraph CHAT[Chat Processing]
+D[Process response]
+E[Display message in chat]
+end
+
+A --> B --> C --> D --> E
+```
+
+---
+
+# 🚀 Run Locally
+
+Run a local server:
+
+python3 -m http.server 4173
+
+Then open in browser:
+
+http://localhost:4173
+
+---
+
+# 💡 Future Improvements
+
+* AI-powered conversational responses
+* Context-aware chat memory
+* Image gallery search
+* Knowledge graph visualization
+* Chat analytics dashboard
+* Improved multilingual support
+
+---
+
+# 👨‍💻 Author
+
+**Lomada Siva Gangi Reddy**
+
+🎓 B.Tech CSE (Data Science), RGMCET (2021–2025)
+💡 Interests: Python | Machine Learning | Data Science | AI
+📍 Open to **Internships & Job Opportunities**
+
+**Contact Me**
+
+📧 Email: [lomadasivagangireddy3@gmail.com](mailto:lomadasivagangireddy3@gmail.com)
+📞 Phone: +91 9346493592
+
+💼 LinkedIn
+https://www.linkedin.com/in/lomada-siva-gangi-reddy-a64197280/
+
+💻 GitHub
+https://github.com/shivareddy2002
+
+🌐 Portfolio
+https://lsgr-portfolio-pulse.lovable.app/
+
+---
+
+<p align="center">
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:ff7e5f,100:feb47b&height=120&section=footer"/>
+</p>
