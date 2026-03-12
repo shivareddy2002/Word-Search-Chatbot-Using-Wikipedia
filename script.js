@@ -268,7 +268,7 @@ function getConversationalReply(question) {
   const clean = question.trim().toLowerCase();
 
   if (/^(hi|hello|hey|hii|hola)\b/.test(clean)) {
-    return "Hi! I’m doing well—thanks for checking in. 😊 How are you doing today? If you want, I can also help you explore any topic in detail.";
+    return "Hi!  😊 How are you doing today? If you want, I can also help you explore any topic in detail.";
   }
 
   if (/how are you|how r u|how're you/.test(clean)) {
@@ -338,7 +338,6 @@ function buildMessageNode(message) {
     <div class="msg-actions">
       <button class="action-btn" data-msg-action="copy">Copy</button>
       <button class="action-btn" data-msg-action="speak">Speak</button>
-      <button class="action-btn" data-msg-action="delete">Delete</button>
     </div>
   `;
   return article;
@@ -535,7 +534,7 @@ function startMic() {
 
     state.recognition.onend = () => {
       state.isMicListening = false;
-      els.micBtn.textContent = "🎤";
+      els.micBtn.textContent = "🎙️";
       els.micBtn.title = "Speech to text";
     };
 

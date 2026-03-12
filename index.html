@@ -15,8 +15,8 @@
 
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h2>WORD SEARCH CHAT BOT</h2>
-        <button id="newChatBtn" class="btn btn-primary" type="button">+ New Chat</button>
+        <h2>CHAT BOT</h2>
+        <button id="newChatBtn" class="btn btn-primary" type="button">➕ New Chat</button>
       </div>
 
       <div class="sidebar-search-wrap">
@@ -33,23 +33,22 @@
           <button id="menuBtn" class="icon-btn mobile-only" type="button" aria-label="Open sidebar">☰</button>
           <div>
             <h1>Word Search Chat Bot</h1>
-            <p>Conversational Knowledge Assistant</p>
           </div>
         </div>
 
         <div class="topbar-right">
           <select id="languageSelect" title="Select language">
-            <option value="en">English (en)</option>
-            <option value="hi">Hindi (hi)</option>
-            <option value="te">Telugu (te)</option>
-            <option value="ta">Tamil (ta)</option>
-            <option value="kn">Kannada (kn)</option>
-            <option value="ml">Malayalam (ml)</option>
-            <option value="bn">Bengali (bn)</option>
-            <option value="mr">Marathi (mr)</option>
+            <option value="en">English </option>
+            <option value="hi">Hindi </option>
+            <option value="te">Telugu </option>
+            <option value="ta">Tamil </option>
+            <option value="kn">Kannada </option>
+            <option value="ml">Malayalam </option>
+            <option value="bn">Bengali </option>
+            <option value="mr">Marathi </option>
           </select>
           <button id="themeBtn" class="icon-btn" type="button" title="Toggle theme">🌙</button>
-          <button id="downloadBtn" class="icon-btn" type="button" title="Download chat as text">⬇ TXT</button>
+          <button id="downloadBtn" class="icon-btn" type="button" title="Download chat as text">📩</button>
         </div>
       </header>
 
@@ -57,15 +56,16 @@
 
       <footer class="composer-wrap">
         <div class="suggestion-tray" id="suggestionTray">
-          <button class="suggestion-chip" type="button" data-suggestion="Artificial intelligence">Artificial intelligence</button>
-          <button class="suggestion-chip" type="button" data-suggestion="Quantum computing">Quantum computing</button>
+          <button class="suggestion-chip" type="button" data-suggestion="Artificial intelligence">AI</button>
           <button class="suggestion-chip" type="button" data-suggestion="ISRO">ISRO</button>
           <button class="suggestion-chip" type="button" data-suggestion="World War II">World War II</button>
+          <button class="suggestion-chip" type="button" data-suggestion="Quantum computing">Quantum computing</button>
         </div>
         <div class="composer">
-          <button id="micBtn" class="icon-btn" type="button" title="Speech to text">🎤</button>
           <input id="promptInput" type="text" placeholder="Ask anything from Wikipedia..." autocomplete="off" />
+          <button id="micBtn" class="icon-btn" type="button" title="Speech to text">🎙️</button>
           <button id="sendBtn" class="btn btn-send" type="button">Send</button>
+          
         </div>
       </footer>
     </main>

@@ -8,11 +8,11 @@
   --sidebar-bg: #0f172a;
   --sidebar-item: #1e293b;
   --sidebar-text: #e2e8f0;
-  --bubble-user: linear-gradient(135deg, #2563eb, #0ea5e9);
+  --bubble-user: linear-gradient(135deg, #222939, #25353d);
   --bubble-user-text: #fff;
   --bubble-bot: #f8fafc;
   --bubble-bot-text: #0f172a;
-  --grad: linear-gradient(120deg, #1d4ed8, #0f766e);
+  --grad: linear-gradient(120deg, #1e2433, #222f2e);
   --shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
   --highlight: #fde68a;
   --input-bg: #fff;
