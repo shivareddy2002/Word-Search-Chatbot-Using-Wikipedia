@@ -2,6 +2,7 @@
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:00c6ff,100:0072ff&height=180&section=header&text=🧠%20PICTOPEDIA%20—%20Wikipedia%20Search%20Chatbot&fontSize=34&fontColor=ffffff&animation=fadeIn&fontAlignY=35"/>
 </p>
 
+
 PICTOPEDIA is a modern **Wikipedia Search Chatbot** built using **HTML, CSS, and JavaScript**.
 It allows users to search topics, ask questions, and retrieve information directly from **Wikipedia APIs** through an interactive conversational interface.
 
